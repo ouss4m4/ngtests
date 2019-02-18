@@ -10,6 +10,10 @@ export class AppComponent {
   constructor(private _quoteService: QuoteService) {}
   title = 'promtest';
   quoteText = null;
+  onClick() {
+    this.loadQuote();
+  }
+
   loadQuote() {
     this._quoteService
       .getQuote()
