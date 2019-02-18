@@ -1,35 +1,53 @@
-import { TestBed, async } from '@angular/core/testing';
+import {
+  TestBed,
+  async,
+  ComponentFixture,
+  fakeAsync,
+  tick
+} from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import { QuoteService } from './quote.service';
 
 describe('AppComponent', () => {
+  let fixture: ComponentFixture<AppComponent>;
+  let component: AppComponent;
+  let quoteService: QuoteService;
+  let quoteEl;
+  const mockService = {
+    staticQuote: 'testQuote',
+    getQuote: function() {
+      return Promise.resolve(mockService.staticQuote);
+    }
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule
-      ],
-      declarations: [
-        AppComponent
-      ],
+      imports: [RouterTestingModule],
+      declarations: [AppComponent],
+      providers: [{ provide: QuoteService, useValue: mockService }]
     }).compileComponents();
   }));
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have as title 'promtest'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('promtest');
-  });
-
-  it('should render title in a h1 tag', () => {
-    const fixture = TestBed.createComponent(AppComponent);
+  beforeEach(() => {
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    quoteService = TestBed.get(QuoteService);
+    quoteEl = fixture.nativeElement.querySelector('.twain');
     fixture.detectChanges();
-    const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to promtest!');
   });
+
+  it('should show quote after getQuote (async)', async(() => {
+    component.loadQuote();
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      expect(quoteEl.textContent).toBe(quoteService.staticQuote);
+    });
+  }));
+
+  it('should show quote with fakeAsync', fakeAsync(() => {
+    component.loadQuote();
+    tick();
+    fixture.detectChanges();
+    expect(quoteEl.textContent).toBe(quoteService.staticQuote);
+  }));
 });
